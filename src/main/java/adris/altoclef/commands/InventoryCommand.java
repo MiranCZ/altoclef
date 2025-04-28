@@ -14,7 +14,7 @@ import net.minecraft.item.ItemStack;
 import java.util.HashMap;
 
 public class InventoryCommand extends Command {
-    public InventoryCommand() throws CommandException {
+    public InventoryCommand() {
         super("inventory", "Prints the bot's inventory OR returns how many of an item the bot has",
                 new CataloguedItemArg("item", null, false)
         );

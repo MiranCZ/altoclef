@@ -29,7 +29,7 @@ public class EquipCommand extends Command {
                         .addAlias("netherite", Arrays.stream(ItemHelper.NETHERITE_ARMORS).map(Item::toString).toList())
         );
     }
-    //TODO
+
     @Override
     protected void call(AltoClef mod, ArgParser parser) throws CommandException {
         List<ItemTarget> items = parser.get(List.class);

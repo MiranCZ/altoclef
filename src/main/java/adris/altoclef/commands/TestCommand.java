@@ -9,7 +9,7 @@ import adris.altoclef.commandsystem.args.StringArg;
 
 public class TestCommand extends Command {
 
-    public TestCommand() throws CommandException {
+    public TestCommand() {
         super("test", "Generic command for testing",
                 new StringArg("extra", "")
         );

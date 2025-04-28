@@ -13,6 +13,7 @@ buildscript {
 plugins {
     id "maven-publish"
     id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'xyz.wagyourtail.jvmdowngrader' version '1.2.2'
 }
 
 apply plugin: 'fabric-loom'
@@ -22,13 +23,13 @@ preprocess {
     patternAnnotation.set("adris.altoclef.multiversion.Pattern")
 }
 
-sourceCompatibility = mcVersion >= 12006 ?  JavaVersion.VERSION_21 : JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_21
 targetCompatibility = sourceCompatibility
 
 
 
 tasks.withType(JavaCompile).configureEach {
-    options.release = mcVersion >= 12006 ?  21 : 17
+    options.release = 21
 }
 
 archivesBaseName = project.archives_base_name
@@ -36,7 +37,7 @@ version = "${project.name}-${project.mod_version}"
 group = project.maven_group
 
 def mappingsVersions = [
-//        11605: "1.16.5+build.10", // fixme 1.16.5 is not working due to java version drop to java 8
+        11605: "1.16.5+build.10",
         11701: "1.17.1+build.65",
         11800: "1.18+build.1",
         11802: "1.18.2+build.4",
@@ -51,7 +52,7 @@ def mappingsVersions = [
 ]
 
 def fabricApiVersions = [
-//        11605: "0.42.0+1.16", // fixme 1.16.5 is not working due to java version drop to java 8
+        11605: "0.42.0+1.16",
         11701: "0.46.1+1.17",
         11800: "0.44.0+1.18",
         11802: "0.77.0+1.18.2",
@@ -64,6 +65,15 @@ def fabricApiVersions = [
         12100: "0.100.7+1.21",
         12101: "0.110.0+1.21.1",
 ]
+
+def getJavaVersion() {
+    if (mcVersion >= 12006) {
+        return JavaVersion.VERSION_21;
+    } else if (mcVersion >= 11700) {
+        return JavaVersion.VERSION_17;
+    }
+    return JavaVersion.VERSION_1_8;
+}
 
 
 repositories {
@@ -82,6 +92,10 @@ repositories {
     }
 }
 
+jvmdg {
+    downgradeTo = getJavaVersion()
+}
+
 dependencies {
     //to change the versions see the gradle.properties file
     minecraft("com.mojang:minecraft:${project.name}")
@@ -96,6 +110,9 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.16.0'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.16.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.0'
+
+    // Jvm downgrader
+    include('xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:0.9.0:downgraded-8')
 
     // Nether pathfinder
     implementation 'dev.babbaj:nether-pathfinder:1.5'
@@ -125,6 +142,35 @@ shadowJar {
 remapJar {
     dependsOn("shadowJar")
     input.set(shadowJar.archiveFile)
+}
+
+downgradeJar {
+    dependsOn("remapJar")
+    inputFile.set(remapJar.archiveFile)
+}
+
+tasks.register('replaceJar') {
+    // do not downgrade java version if we do not need to
+    if (getJavaVersion() == targetCompatibility) {
+        return
+    }
+
+    dependsOn downgradeJar
+    doLast {
+        def originalJar = tasks.remapJar.archiveFile.get().asFile
+        def downgradedJar = file("${originalJar.parent}/${originalJar.name.replace('.jar', '-downgraded.jar')}")
+        if (downgradedJar.exists()) {
+            originalJar.delete()
+            downgradedJar.renameTo(originalJar)
+        } else {
+            throw new GradleException("Downgraded JAR not found: ${downgradedJar}")
+        }
+    }
+}
+
+
+build {
+    dependsOn tasks.replaceJar
 }
 
 processResources {

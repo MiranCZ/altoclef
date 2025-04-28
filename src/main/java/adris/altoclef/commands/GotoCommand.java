@@ -17,7 +17,7 @@ import net.minecraft.util.math.BlockPos;
  */
 public class GotoCommand extends Command {
 
-    public GotoCommand() throws CommandException {
+    public GotoCommand() {
         // x z
         // x y z
         // x y z dimension

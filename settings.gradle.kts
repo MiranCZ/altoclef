@@ -32,7 +32,7 @@ listOf(
     "1.18.2",
     "1.18",
     "1.17.1",
-//    "1.16.5"// fixme 1.16.5 is not working due to java version drop to java 8
+    "1.16.5"
 ).forEach { version ->
     include(":$version")
     project(":$version").apply {

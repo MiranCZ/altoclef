@@ -40,13 +40,13 @@ public class DepositCommand extends Command {
 
     @Override
     protected void call(AltoClef mod, ArgParser parser) throws CommandException {
-        List<ItemStack> itemList = parser.get(List.class);
+        List<ItemTarget> itemList = parser.get(List.class);
 
         ItemTarget[] items;
         if (itemList == null) {
             items = getAllNonEquippedOrToolItemsAsTarget(mod);
         } else {
-            items = itemList.stream().map(stack -> new ItemTarget(stack.getItem(), stack.getCount())).toArray(ItemTarget[]::new);
+            items = itemList.toArray(ItemTarget[]::new);
         }
 
         mod.runUserTask(new StoreInAnyContainerTask(false, items), this::finish);

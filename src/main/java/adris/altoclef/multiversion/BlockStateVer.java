@@ -33,13 +33,4 @@ public class BlockStateVer {
         //#endif
     }
 
-    @Pattern
-    private static float getHardness(Block block) {
-        //#if MC >= 11701
-        return block.getHardness();
-        //#else
-        //$$ return block.getDefaultState().getHardness(null, null);
-        //#endif
-    }
-
 }
