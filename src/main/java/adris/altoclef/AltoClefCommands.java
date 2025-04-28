@@ -38,7 +38,8 @@ public class AltoClefCommands {
                 new MarvionCommand(),
                 new DummyTaskCommand(),
                 new FollowCommand(),
-                new ScanCommand()
+                new ScanCommand(),
+                new GiveCommand()
         );
     }
 }

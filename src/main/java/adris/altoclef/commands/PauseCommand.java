@@ -11,10 +11,15 @@ public class PauseCommand extends Command {
 
     @Override
     protected void call(AltoClef mod, ArgParser parser) {
-        mod.setStoredTask(mod.getUserTaskChain().getCurrentTask());
-        mod.setPaused(true);
-        mod.getUserTaskChain().stop();
-        mod.log("Pausing Bot and time");
-        finish();
+        if (!mod.getUserTaskChain().isActive()) {
+            mod.log("Bot has no current task");
+            finish();
+        } else {
+            mod.setStoredTask(mod.getUserTaskChain().getCurrentTask());
+            mod.setPaused(true);
+            mod.getUserTaskChain().stop();
+            mod.log("Pausing Bot and time");
+            finish();
+        }
     }
 }

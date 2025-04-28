@@ -86,7 +86,14 @@ public class GiveItemToPlayerTask extends Task {
                 }
             }
 
-            if (!targetPos.isInRange(mod.getPlayer().getPos(), 4)) {
+            boolean finishedThrowing = true;
+            for (ItemTarget target : throwTarget) {
+                if (target.getTargetCount() > 0) {
+                    finishedThrowing = false;
+                    break;
+                }
+            }
+            if (finishedThrowing) {
                 mod.log("Finished giving items.");
                 stop();
                 return null;
