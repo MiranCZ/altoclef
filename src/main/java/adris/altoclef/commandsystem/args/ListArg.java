@@ -111,33 +111,23 @@ public class ListArg<T> extends Arg<List<T>> {
             }
 
             if (parsed.endsInColumn) {
-                return getArgSuggestions(makeStringReaderChecked(""));
+                return getArgSuggestions(new StringReader(""));
             }
 
-            return getArgSuggestions(makeStringReaderChecked(parts[parts.length-1]));
+            return getArgSuggestions(new StringReader(parts[parts.length-1]));
         } catch (CommandException e) {
             throw new IllegalStateException("Illegal type "+e.getClass().getSimpleName(), e);
         }
 
         // everything was consumed, nothing to return
-        return getArgSuggestions(makeStringReaderChecked(""));
+        return getArgSuggestions(new StringReader(""));
     }
 
     private Stream<String> getArgSuggestions(StringReader reader) {
         return Stream.concat(argument.getSuggestions(reader), aliases.keySet().stream());
     }
 
-    private static StringReader makeStringReaderChecked(String line) {
-        try {
-            return new StringReader(line);
-        } catch (CommandException e) {
-            try {
-                return new StringReader("");
-            } catch (CommandException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-    }
+
 
     private static ParseResult getParts(StringReader reader) {
         String fullList = "";

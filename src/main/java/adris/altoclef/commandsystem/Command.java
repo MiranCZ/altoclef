@@ -6,21 +6,28 @@ import adris.altoclef.commandsystem.args.Arg;
 import adris.altoclef.commandsystem.args.GoToTargetArg;
 import adris.altoclef.commandsystem.args.ListArg;
 import adris.altoclef.commandsystem.exception.CommandException;
+import adris.altoclef.commandsystem.exception.RuntimeCommandException;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 public abstract class Command {
 
     private final ArgParser parser;
     private final Arg<?>[] args;
-    private final String name;
+    private final List<String> names;
     private final String description;
     private AltoClef mod;
     private Runnable onFinish = null;
     private int minArgCount = 0;
 
     public Command(String name, String description, Arg<?>... args) {
-        this.name = name;
+        this(List.of(name), description, args);
+    }
+
+    public Command(List<String> names, String description, Arg<?>... args) {
+        this.names = names;
         this.description = description;
         parser = new ArgParser(args);
         this.args = args;
@@ -39,15 +46,19 @@ public abstract class Command {
             onFinish.run();
     }
 
-    public String getHelpRepresentation() {
-        return getHelpRepresentation(-1);
+    public String getHelpRepresentation(String usedName)  throws RuntimeCommandException{
+        return getHelpRepresentation(usedName,-1);
     }
 
-    public String getHelpRepresentation(int fromArg) {
+    public String getHelpRepresentation(String usedName,int fromArg) throws RuntimeCommandException {
+        if (!names.contains(usedName)) {
+            throw new RuntimeCommandException("Cannot invoke command with name '"+usedName+"', "+names);
+        }
+
         StringBuilder sb;
         if (fromArg < 0) {
             fromArg = 0;
-            sb = new StringBuilder(name).append(" ");
+            sb = new StringBuilder(usedName).append(" ");
         } else {
             sb = new StringBuilder();
         }
@@ -74,8 +85,8 @@ public abstract class Command {
 
     protected abstract void call(AltoClef mod, ArgParser parser) throws CommandException;
 
-    public String getName() {
-        return name;
+    public List<String> getNames() {
+        return Collections.unmodifiableList(names);
     }
 
     public String getDescription() {

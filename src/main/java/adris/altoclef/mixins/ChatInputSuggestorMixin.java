@@ -9,6 +9,7 @@ import adris.altoclef.commandsystem.args.ListArg;
 import adris.altoclef.commandsystem.exception.BadCommandSyntaxException;
 import adris.altoclef.commandsystem.exception.CommandException;
 import adris.altoclef.commandsystem.exception.CommandNotFinishedException;
+import adris.altoclef.commandsystem.exception.RuntimeCommandException;
 import adris.altoclef.util.Pair;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.ChatInputSuggestor;
@@ -298,7 +299,7 @@ public abstract class ChatInputSuggestorMixin {
                 } else if ((original.endsWith(" ") || original.endsWith("[") || original.endsWith(",") || original.endsWith(";") || arg instanceof ListArg<?>)
                         && original.length() == maxLen
                 ) {
-                    String str = command.getHelpRepresentation(i);
+                    String str = command.getHelpRepresentation(cmd, i);
                     errorMsg = Text.literal(str).setStyle(this.INFO_STYLE);
 
                     errorSeverity = 1;

@@ -3,7 +3,7 @@ package adris.altoclef.tasks.speedrun.beatgame;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.commands.BlockScanner;
+import adris.altoclef.trackers.BlockScanner;
 import adris.altoclef.commands.SetGammaCommand;
 import adris.altoclef.multiversion.blockpos.BlockPosVer;
 import adris.altoclef.multiversion.versionedfields.Blocks;

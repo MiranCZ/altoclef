@@ -1,4 +1,4 @@
-package adris.altoclef.commands;
+package adris.altoclef.trackers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
