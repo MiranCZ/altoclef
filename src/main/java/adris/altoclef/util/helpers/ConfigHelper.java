@@ -114,8 +114,12 @@ public class ConfigHelper {
         T config = getConfig(path, getDefault, classToLoad);
 
         // Store the configuration object and the reload callback in the loadedConfigs map.
-        _loadedConfigs.put(path, () -> onReload.accept(config));
-
+        _loadedConfigs.put(path, () -> {
+            // Re-read the config from disk using the same parameters
+            T reloadedConfig = getConfig(path, getDefault, classToLoad);
+            // Call the original callback with the NEWLY loaded config object
+            onReload.accept(reloadedConfig);
+        });
         // Call the onReload callback function to notify that the configuration is loaded.
         onReload.accept(config);
     }

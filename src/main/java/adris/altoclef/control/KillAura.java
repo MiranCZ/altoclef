@@ -38,6 +38,7 @@ public class KillAura {
     private double forceFieldRange = Double.POSITIVE_INFINITY;
     private Entity forceHit = null;
     public boolean attackedLastTick = false;
+    private float attackRange;
 
     public static void equipWeapon(AltoClef mod) {
         List<ItemStack> invStacks = mod.getItemStorage().getItemStacksPlayerInventory(true);
@@ -77,11 +78,13 @@ public class KillAura {
     }
 
     public void tickEnd(AltoClef mod) {
+        attackRange = mod.getModSettings().getEntityReachRange();
+
         Optional<Entity> entities = targets.stream().min(StlHelper.compareValues(entity -> entity.squaredDistanceTo(mod.getPlayer())));
         if (entities.isPresent() &&
                 !mod.getEntityTracker().entityFound(PotionEntity.class) &&
                 (Double.isInfinite(forceFieldRange) || entities.get().squaredDistanceTo(mod.getPlayer()) < forceFieldRange * forceFieldRange ||
-                        entities.get().squaredDistanceTo(mod.getPlayer()) < 40) &&
+                        entities.get().squaredDistanceTo(mod.getPlayer()) < attackRange * attackRange) &&
                 !mod.getMLGBucketChain().isFalling(mod) && mod.getMLGBucketChain().doneMLG() &&
                 !mod.getMLGBucketChain().isChorusFruiting()) {
             PlayerSlot offhandSlot = PlayerSlot.OFFHAND_SLOT;
@@ -173,7 +176,7 @@ public class KillAura {
             LookHelper.lookAt(mod, new Vec3d(xAim, yAim, zAim));
         }
         if (Double.isInfinite(forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < forceFieldRange * forceFieldRange ||
-                entity.squaredDistanceTo(mod.getPlayer()) < 40) {
+                entity.squaredDistanceTo(mod.getPlayer()) < attackRange * attackRange) {
             if (entity instanceof FireballEntity) {
                 mod.getControllerExtras().attack(entity);
             }

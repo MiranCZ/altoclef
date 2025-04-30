@@ -27,6 +27,7 @@ public class AltoClefCommands {
                 new InventoryCommand(),
                 new LocateStructureCommand(),
                 new StopCommand(),
+                new CancelCommand(),
                 new PauseCommand(),
                 new UnPauseCommand(),
                 new SetGammaCommand(),
