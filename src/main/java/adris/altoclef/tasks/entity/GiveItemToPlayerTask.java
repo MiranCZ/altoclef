@@ -1,19 +1,18 @@
 package adris.altoclef.tasks.entity;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.commandsystem.GotoTarget;
 import adris.altoclef.tasks.movement.FollowPlayerTask;
-import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
+import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
-import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.slots.Slot;
-import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
@@ -28,7 +27,10 @@ public class GiveItemToPlayerTask extends Task {
 
     private final CataloguedResourceTask resourceTask;
     private final List<ItemTarget> throwTarget = new ArrayList<>();
+    private Vec3d targetPos;
     private boolean droppingItems;
+    private boolean atGoal;
+    private GotoTarget cords = null;
 
     private Task throwTask;
 
@@ -38,9 +40,17 @@ public class GiveItemToPlayerTask extends Task {
         resourceTask = TaskCatalogue.getSquashedItemTask(targets);
     }
 
+    public GiveItemToPlayerTask(String player, GotoTarget gotocords, ItemTarget... targets) {
+        playerName = player;
+        this.targets = targets;
+        this.cords = gotocords;
+        resourceTask = TaskCatalogue.getSquashedItemTask(targets);
+    }
+
     @Override
     protected void onStart() {
         droppingItems = false;
+        atGoal = false;
         throwTarget.clear();
     }
 
@@ -53,60 +63,62 @@ public class GiveItemToPlayerTask extends Task {
             return throwTask;
         }
 
-        Optional<Vec3d> lastPos = mod.getEntityTracker().getPlayerMostRecentPosition(playerName);
-
-        if (lastPos.isEmpty()) {
-            setDebugState("No player found/detected. Doing nothing until player loads into render distance.");
-            return null;
-        }
-        Vec3d targetPos = lastPos.get().add(0, 0.2f, 0);
-
-        if (droppingItems) {
-            // THROW ITEMS
-            setDebugState("Throwing items");
-            LookHelper.lookAt(mod, targetPos);
-            for (int i = 0; i < throwTarget.size(); ++i) {
-                ItemTarget target = throwTarget.get(i);
-                if (target.getTargetCount() > 0) {
-                    Optional<Slot> has = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, target.getMatches()).stream().findFirst();
-                    if (has.isPresent()) {
-                        Slot currentlyPresent = has.get();
-                        if (Slot.isCursor(currentlyPresent)) {
-                            ItemStack stack = StorageHelper.getItemStackInSlot(currentlyPresent);
-                            // Update target
-                            target = new ItemTarget(target, target.getTargetCount() - stack.getCount());
-                            throwTarget.set(i, target);
-                            Debug.logMessage("THROWING: " + has.get());
-                            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                        } else {
-                            mod.getSlotHandler().clickSlot(currentlyPresent, 0, SlotActionType.PICKUP);
-                        }
-                        return null;
-                    }
-                }
-            }
-
-            boolean finishedThrowing = true;
-            for (ItemTarget target : throwTarget) {
-                if (target.getTargetCount() > 0) {
-                    finishedThrowing = false;
-                    break;
-                }
-            }
-            if (finishedThrowing) {
-                mod.log("Finished giving items.");
-                stop();
+        if (cords==null) {
+            Optional<Vec3d> lastPos = mod.getEntityTracker().getPlayerMostRecentPosition(playerName);
+            if (lastPos.isEmpty()) {
+                setDebugState("No player found/detected. Doing nothing until player loads into render distance.");
                 return null;
             }
-            return new RunAwayFromPositionTask(6, WorldHelper.toBlockPos(targetPos));
+            targetPos = lastPos.get().add(0, 1f, 0);
         }
+
 
         if (!StorageHelper.itemTargetsMet(mod, targets)) {
             setDebugState("Collecting resources...");
             return resourceTask;
         }
 
-        if (targetPos.isInRange(mod.getPlayer().getPos(), 1.5)) {
+        if (cords!=null) {
+            if (!atGoal) {
+                atGoal = true;
+                return new GetToBlockTask(new BlockPos(cords.getX(), cords.getY(), cords.getZ()), cords.getDimension());
+            }
+            Optional<Vec3d> lastPos = mod.getEntityTracker().getPlayerMostRecentPosition(playerName);
+            if (lastPos.isEmpty()) {
+                setDebugState("No player found/detected. Doing nothing until player loads into render distance.");
+                return null;
+            }
+            targetPos = lastPos.get().add(0, 2f, 0);
+        }
+
+        if (droppingItems) {
+            // For each target, pick up its stack and then throw it
+            for (int i = 0; i < throwTarget.size(); i++) {
+                ItemTarget target = throwTarget.get(i);
+                if (target.getTargetCount() <= 0) continue;
+
+                // Find a slot containing this item
+                Optional<Slot> maybeSlot = mod.getItemStorage()
+                        .getSlotsWithItemPlayerInventory(false, target.getMatches())
+                        .stream()
+                        .findFirst();
+
+                if (maybeSlot.isEmpty()) continue;
+                Slot slot = maybeSlot.get();
+
+                // LOOK & DEBUG once per action
+                setDebugState("Throwing items");
+                LookHelper.lookAt(mod, targetPos);
+
+                //Throws entire stack of items
+                mod.getSlotHandler().clickSlot(slot, 1, SlotActionType.THROW);
+            }
+            mod.log("Finished giving items.");
+            stop();
+            return null;
+        }
+
+        if (targetPos.isInRange(mod.getPlayer().getPos(), 4)) {
             if (!mod.getEntityTracker().isPlayerLoaded(playerName)) {
                 mod.logWarning("Failed to get to player \"" + playerName + "\". We moved to where we last saw them but now have no idea where they are.");
                 stop();

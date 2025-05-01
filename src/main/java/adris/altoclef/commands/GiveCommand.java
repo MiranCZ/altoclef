@@ -2,9 +2,8 @@ package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.commandsystem.args.ItemTargetArg;
-import adris.altoclef.commandsystem.args.ListArg;
-import adris.altoclef.commandsystem.args.StringArg;
+import adris.altoclef.commandsystem.GotoTarget;
+import adris.altoclef.commandsystem.args.*;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.exception.CommandException;
@@ -20,7 +19,8 @@ public class GiveCommand extends Command {
     public GiveCommand() throws CommandException {
         super("give", "Collect an item and give it to you or someone else",
                 new StringArg("username", null),
-                new ListArg<>(new ItemTargetArg("items"), "items")
+                new ListArg<>(new ItemTargetArg("items"), "items"),
+                new GoToTargetArg("cordinates")
         );
     }
 
@@ -61,11 +61,25 @@ public class GiveCommand extends Command {
             }
             resolved.add(best);
         }
+        GotoTarget cordinates = null;
+        boolean hasCoords = parser.has(GotoTarget.class);
+        if (hasCoords) {
+            cordinates = parser.get(GotoTarget.class);
+            Debug.logMessage("Using cordinates: " + cordinates);
+        } else {
+            Debug.logMessage("No cordinates supplied; skipping move.");
+        }
 
         // Submit a give task for each resolved item
         for (ItemTarget target : resolved) {
-            mod.log(String.format("USER: %s : ITEM: %s x %d", username, target.getCatalogueName(), target.getTargetCount()));
-            mod.runUserTask(new GiveItemToPlayerTask(username, target), this::finish);
+            if (cordinates==null) {
+                mod.log(String.format("USER: %s : ITEM: %s x %d.", username, target.getCatalogueName(), target.getTargetCount()));
+                mod.runUserTask(new GiveItemToPlayerTask(username, target), this::finish);
+            }
+            else {
+                mod.log(String.format("USER: %s : ITEM: %s x %d. Final Location: %d, %d, %d", username, target.getCatalogueName(), target.getTargetCount(), cordinates.getX(), cordinates.getY(), cordinates.getZ()));
+                mod.runUserTask(new GiveItemToPlayerTask(username, cordinates, target), this::finish);
+            }
         }
     }
 }

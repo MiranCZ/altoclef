@@ -52,6 +52,15 @@ public class ArgParser {
         throw new RuntimeCommandException("Not the same type! ("+args[argCounter].getType() + " VS "+type+")");
     }
 
+    //Check for certain arg
+    public boolean has(Class<?> type) {
+        if (argCounter >= args.length) return false;
+        Arg<?> next = args[argCounter];
+        if (!next.getType().isAssignableFrom(type)) return false;
+        if (reader.hasNext()) return true;
+        return next.hasDefault;
+    }
+
     public Arg<?>[] getArgs() {
         return args;
     }

@@ -141,9 +141,12 @@ public class InventorySubTracker extends Tracker {
                     continue;
                 int windowCheck = airSlot.getWindowSlot();
                 // Special case: Armor/shield, we wish to ignore these if our inventory is not open.
-                if (windowCheck < handler.slots.size() && handler.getSlot(windowCheck).canInsert(item)) {
+                if (windowCheck >= 0
+                        && windowCheck < handler.slots.size()
+                        && handler.getSlot(windowCheck).canInsert(item)) {
                     result.add(airSlot);
                 }
+
             }
         }
         return result;
