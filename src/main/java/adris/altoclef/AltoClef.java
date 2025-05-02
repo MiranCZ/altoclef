@@ -3,7 +3,7 @@ package adris.altoclef;
 
 import adris.altoclef.butler.Butler;
 import adris.altoclef.chains.*;
-import adris.altoclef.commands.BlockScanner;
+import adris.altoclef.trackers.BlockScanner;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.commandsystem.TabCompleter;
 import adris.altoclef.control.InputControls;
@@ -27,6 +27,7 @@ import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
 import adris.altoclef.util.helpers.InputHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
@@ -173,6 +174,7 @@ public class AltoClef implements ModInitializer {
             // Don't break blocks or place blocks where we are explicitly protected.
             getExtraBaritoneSettings().avoidBlockBreak(blockPos -> settings.isPositionExplicitlyProtected(blockPos));
             getExtraBaritoneSettings().avoidBlockPlace(blockPos -> settings.isPositionExplicitlyProtected(blockPos));
+            getExtraBaritoneSettings().getForceSaveToolPredicates().add((state, item) -> StorageHelper.shouldSaveStack(this, state.getBlock(), item));
         });
 
         // Receive + cancel chat

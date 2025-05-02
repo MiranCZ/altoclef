@@ -4,10 +4,12 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 
+import java.util.List;
+
 public class StopCommand extends Command {
 
     public StopCommand() {
-        super("stop", "Stop task runner (stops all automation)");
+        super(List.of("stop", "cancel"), "Stop task runner (stops all automation)");
     }
 
     @Override

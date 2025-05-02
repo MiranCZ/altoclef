@@ -20,11 +20,14 @@ public class CommandExecutor {
 
     public void registerNewCommand(Command... commands) {
         for (Command command : commands) {
-            if (commandSheet.containsKey(command.getName())) {
-                Debug.logInternal("Command with name " + command.getName() + " already exists! Can't register that name twice.");
-                continue;
+            for (String name : command.getNames()) {
+                if (commandSheet.containsKey(name)) {
+                    Debug.logInternal("Command with name " + name + " already exists! Can't register that name twice.");
+                    continue;
+                }
+                
+                commandSheet.put(name, command);
             }
-            commandSheet.put(command.getName(), command);
         }
     }
 
@@ -52,7 +55,11 @@ public class CommandExecutor {
                 command.run(mod, part.strip(), () -> executeRecursive(commands, parts, index + 1, onFinish, getException));
             }
         } catch (CommandException ae) {
-            getException.accept(new RuntimeCommandException(ae.getMessage() + "\nUsage: " + command.getHelpRepresentation(), ae));
+            try {
+                getException.accept(new RuntimeCommandException(ae.getMessage() + "\nUsage: " + command.getHelpRepresentation(new StringReader(part).nextOrEmpty()), ae));
+            } catch (RuntimeCommandException e) {
+                throw new IllegalStateException("Should not happen!");
+            }
         }
     }
 

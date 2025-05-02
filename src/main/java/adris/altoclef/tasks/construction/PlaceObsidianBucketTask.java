@@ -4,7 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.BotBehaviour;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.commands.BlockScanner;
+import adris.altoclef.trackers.BlockScanner;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;

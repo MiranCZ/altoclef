@@ -18,11 +18,13 @@ public class HelpCommand extends Command {
         for (Command c : AltoClef.getCommandExecutor().allCommands()) {
             StringBuilder line = new StringBuilder();
             //line.append("");
-            line.append(c.getName()).append(": ");
-            int toAdd = padSize - c.getName().length();
-            line.append(" ".repeat(Math.max(0, toAdd)));
-            line.append(c.getDescription());
-            mod.log(line.toString(), MessagePriority.OPTIONAL);
+            for (String name : c.getNames()) {
+                line.append(name).append(": ");
+                int toAdd = padSize - name.length();
+                line.append(" ".repeat(Math.max(0, toAdd)));
+                line.append(c.getDescription());
+                mod.log(line.toString(), MessagePriority.OPTIONAL);
+            }
         }
         mod.log("###########################", MessagePriority.OPTIONAL);
         finish();

@@ -12,7 +12,7 @@ public class StringReader {
     private final List<String> parts;
     private final List<Integer> indexStarts;
 
-    public StringReader(String line) throws CommandException {
+    public StringReader(String line){
         parts = new ArrayList<>();
         indexStarts = new ArrayList<>();
 
@@ -42,6 +42,16 @@ public class StringReader {
 
         indexStarts.removeFirst();
         return parts.removeFirst();
+    }
+
+    public String nextOrEmpty() {
+        if (parts.isEmpty()) return "";
+
+        try {
+            return next();
+        } catch (CommandException e) {
+            throw new IllegalStateException();
+        }
     }
 
     public int size() {
