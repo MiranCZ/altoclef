@@ -157,6 +157,9 @@ public class WorldSurvivalChain extends SingleTaskChain {
     }
 
     private boolean isStuckInNetherPortal() {
+        if (AltoClef.getInstance().getUserTaskChain().getCurrentTask() == null) {
+            return false;
+        }
         return WorldHelper.isInNetherPortal()
                 && !AltoClef.getInstance().getUserTaskChain().getCurrentTask().thisOrChildSatisfies(task -> task instanceof EnterNetherPortalTask);
     }
